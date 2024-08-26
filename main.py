@@ -62,7 +62,7 @@ if uploaded_file is not None:
                                     selected_df = df_sheet[[time_column, current_column, voltage_column]]
                                     selected_df.columns = ["Zaman", "Akım", "Gerilim"]
                                     selected_df["Zaman"] = (selected_df["Zaman"] * 1000).round(2)
-                                    graph_df = selected_df[selected_df["Akım"] > 0.007]
+                                    graph_df = selected_df[selected_df["Akım"] > 0.07]
                                     peaks, _ = find_peaks(-graph_df["Akım"].values,prominence=0.03)
                                     peak_times = graph_df["Zaman"].iloc[peaks].values
                                     user_time_option = st.radio("Zaman Değeri Seçin", ["Yerel Minimumlardan Seç", "Manuel Zaman Girişi"], key=f"user_time_option_{sheet_name}")
@@ -103,6 +103,13 @@ if uploaded_file is not None:
                                         )
                                         st.plotly_chart(fig)
                                         st.write(filtered_df)
+                                        excel_data1 = to_excel(filtered_df)
+                                        st.download_button(
+                                            label="Sonuçları Excel olarak indir",
+                                            data=excel_data1,
+                                            file_name=f'{sheet_name}_sonuc_listesi.xlsx',
+                                            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                                        )
                     with st.container(border=True):
                     # Sonuçları DataFrame olarak oluştur
 
@@ -116,7 +123,7 @@ if uploaded_file is not None:
                         st.download_button(
                             label="Sonuçları Excel olarak indir",
                             data=excel_data,
-                            file_name='sonuc_listesi.xlsx',
+                            file_name=f'{uploaded_file.name}_sonuc_listesi.xlsx',
                             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                         )
                         # Çizgi grafiği için hazırlık
