@@ -62,7 +62,7 @@ if uploaded_file is not None:
                                     selected_df = df_sheet[[time_column, current_column, voltage_column]]
                                     selected_df.columns = ["Zaman", "Akım", "Gerilim"]
                                     selected_df["Zaman"] = (selected_df["Zaman"] * 1000).round(2)
-                                    graph_df = selected_df[selected_df["Akım"] > 0.001]
+                                    graph_df = selected_df[selected_df["Akım"] > 0.007]
                                     peaks, _ = find_peaks(-graph_df["Akım"].values)
                                     peak_times = graph_df["Zaman"].iloc[peaks].values
                                     user_time_option = st.radio("Zaman Değeri Seçin", ["Yerel Minimumlardan Seç", "Manuel Zaman Girişi"], key=f"user_time_option_{sheet_name}")
