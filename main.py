@@ -9,6 +9,7 @@ def to_excel(df):
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Sonuclar')
     return output.getvalue()
+
 def clean_column_name(col_name, index):
     """Kolon adlarını temizle ve NaN/boş string için varsayılan adlar ver."""
     if pd.notna(col_name) and col_name.strip() != "":
@@ -41,6 +42,10 @@ if uploaded_file is not None:
                     current_column = st.sidebar.selectbox("Akım Sütununu Seçin", valid_columns)
                     voltage_column = st.sidebar.selectbox("Gerilim Sütununu Seçin", valid_columns)
 
+                    # R ve L değerlerini kullanıcıdan bir kez alın
+                    R = st.sidebar.number_input("Direnç (R) Değeri", min_value=0.0, step=0.01)
+                    L = st.sidebar.number_input("İndüktans (L) Değeri", min_value=0.0, step=0.01)
+
                     results = []
                     for sheet_name in selected_sheets:
                         # Her sayfa için bir container oluşturun
@@ -67,9 +72,7 @@ if uploaded_file is not None:
                                         selected_time = st.number_input("Manuel Zaman Değeri Girin", min_value=0.0, step=0.1, key=f"manual_time_{sheet_name}")
                                     filtered_df = graph_df[graph_df["Zaman"] < selected_time]
                                     filtered_df["Çarpım"] = filtered_df["Akım"] * filtered_df["Gerilim"] * 0.1
-                                    R = st.number_input("Direnç (R) Değeri", min_value=0.0, step=0.01, key=f"resistance_{sheet_name}")
                                     filtered_df["R x I^2"] = (filtered_df["Akım"] ** 2) * R * 0.1
-                                    L = st.number_input("İndüktans (L) Değeri", min_value=0.0, step=0.01, key=f"inductance_{sheet_name}")
                                     selected_time_current = selected_df[selected_df["Zaman"] == selected_time]["Akım"].values
                                     if len(selected_time_current) > 0:
                                         selected_time_current = selected_time_current[0]
@@ -99,8 +102,10 @@ if uploaded_file is not None:
                                             template="plotly_white"
                                         )
                                         st.plotly_chart(fig)
+                                        st.write(filtered_df)
                     with st.container(border=True):
                     # Sonuçları DataFrame olarak oluştur
+
                         results_df = pd.DataFrame(results)
                         results_df = results_df.sort_values(by="Bobin Akımı", ascending=False)
 
