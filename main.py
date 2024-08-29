@@ -62,6 +62,8 @@ if uploaded_file is not None:
                                     selected_df = df_sheet[[time_column, current_column, voltage_column]]
                                     selected_df.columns = ["Zaman", "Akım", "Gerilim"]
                                     selected_df["Zaman"] = (selected_df["Zaman"] * 1000).round(2)
+                                    selected_df=selected_df[selected_df["Akım"] > 0.07]
+                                    #st.write(selected_df)
                                     graph_df = selected_df[selected_df["Akım"] > 0.07]
                                     peaks, _ = find_peaks(-graph_df["Akım"].values,prominence=0.03)
                                     peak_times = graph_df["Zaman"].iloc[peaks].values
@@ -70,10 +72,14 @@ if uploaded_file is not None:
                                         selected_time = st.selectbox("Yerel Minimumlardan Zaman Seçin", peak_times, key=f"select_time_{sheet_name}")
                                     else:
                                         selected_time = st.number_input("Manuel Zaman Değeri Girin", min_value=0.0, step=0.1, key=f"manual_time_{sheet_name}")
-                                    filtered_df = graph_df[graph_df["Zaman"] < selected_time]
+                                    filtered_df = selected_df[selected_df["Zaman"] < selected_time]
+                                    last_time = filtered_df["Zaman"].max()
+                                    #st.write(last_time)
+                                    #st.write(selected_df)
+                                    #st.write(filtered_df)
                                     filtered_df["Çarpım"] = filtered_df["Akım"] * filtered_df["Gerilim"] * 0.1
                                     filtered_df["R x I^2"] = (filtered_df["Akım"] ** 2) * R * 0.1
-                                    selected_time_current = selected_df[selected_df["Zaman"] == selected_time]["Akım"].values
+                                    selected_time_current = selected_df[selected_df["Zaman"] == last_time]["Akım"].values
                                     if len(selected_time_current) > 0:
                                         selected_time_current = selected_time_current[0]
                                         calculated_value = (selected_time_current ** 2) * L * 0.5 / 1000
@@ -82,7 +88,7 @@ if uploaded_file is not None:
                                             "Akım ve Gerilim": round(filtered_df["Çarpım"].sum() / 1000, 2),
                                             "Akım ve Direnc": round(filtered_df["R x I^2"].sum() / 1000, 2),
                                             "Sonuc": round(filtered_df["Çarpım"].sum() / 1000 - filtered_df["R x I^2"].sum() / 1000 - calculated_value, 2),
-                                            "Bobin Akımı": round(filtered_df["Gerilim"].mode().values[0], 2)
+                                                "Bobin Akımı": round(filtered_df["Gerilim"].mode().values[0], 2)
                                         })
 
                                         # Akım-Zaman grafiği oluştur
@@ -131,7 +137,7 @@ if uploaded_file is not None:
                         fig.add_trace(go.Scatter(
                             x=results_df["Bobin Akımı"],
                             y=results_df["Sonuc"],
-                            mode='lines+markers',
+                            mode='lines+markers+text',
                             name='Son Hesaplanan Değer'
                         ))
                         fig.update_layout(
